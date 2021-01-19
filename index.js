@@ -1,6 +1,9 @@
 const Discord = require('discord.js');
 const discordClient = new Discord.Client();
-const config = require('./config.json');
+const config = {
+    token: process.env.token,
+    mongouri: process.env.mongouri
+}
 const fs = require('fs');
 const article = fs.readFileSync("README.md").toString();
 
@@ -42,32 +45,30 @@ discordClient.on('message', msg => {
             msg.channel.send("\`\`\`"+article+"\`\`\`");
             return;
         }
-        if(commands[0][0] === prefix){
-            const command = commands[0].substr(1);
-            let filtered = false;
-            filterCommands.forEach((element)=>{
-                if(element === command){
-                    filtered = true;
-                }
-            });
-            if(filtered){
-                msg.channel.send('예약어는 사용할 수 없습니다.');
-                return;
+        const command = commands[0].substr(1);
+        let filtered = false;
+        filterCommands.forEach((element)=>{
+            if(element === command){
+                filtered = true;
             }
-            Command.findOne({command: command}, (err, data)=>{
-                if(err){
-                    console.log(err);
-                }else{
-                    if(data === null){
-                        console.log('nothing');
-                    }else{
-                        msg.channel.send(data.link);
-                        //msg.channel.send({ files: [ data.link ] });
-                    }
-                }
-            });
+        });
+        if(filtered){
+            msg.channel.send('예약어는 사용할 수 없습니다.');
             return;
         }
+        Command.findOne({command: command}, (err, data)=>{
+            if(err){
+                console.log(err);
+            }else{
+                if(data === null){
+                    console.log('nothing');
+                }else{
+                    msg.channel.send(data.link);
+                    //msg.channel.send({ files: [ data.link ] });
+                }
+            }
+        });
+        return;
     }
     if(commands.length === 2){
         const filtered = false;
@@ -98,16 +99,29 @@ discordClient.on('message', msg => {
                         command: command,
                         link: link,
                     });
-                    newCommand.save();
+                    newCommand.save()
+                    .then((data) => {
+                        msg.channel.send('등록 성공');
+                        console.log(data);
+                    })
+                    .catch((err) => {
+                        msg.channel.send('등록 실패');
+                        console.error(err);
+                    });
                 }else{
-                    Command.update({command: command}, {$set: { link: link }});
+                    Command.updateOne({command: command}, {$set: { link: link }})
+                    .then((data) => {
+                        msg.channel.send('수정 성공');
+                        console.log(data);
+                    })
+                    .catch((err) => {
+                        msg.channel.send('수정 실패');
+                        console.error(err);
+                    });
                 }
             }
         });
         return;
-    }
-    if (msg.content === 'ping') {
-        msg.reply('Pong!');
     }
 });
 
