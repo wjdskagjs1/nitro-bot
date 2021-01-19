@@ -1,9 +1,9 @@
 const Discord = require('discord.js');
 const discordClient = new Discord.Client();
 const config = {
-    token: process.env.token,
-    mongouri: process.env.mongouri
-}
+    token,
+    mongouri
+} = process.env; //require('./config.json');
 const fs = require('fs');
 const article = fs.readFileSync("README.md").toString();
 
