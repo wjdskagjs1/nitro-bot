@@ -1,20 +1,20 @@
 const Discord = require('discord.js');
 const discordClient = new Discord.Client();
-const config = {
+const {
     token,
     mongouri
 } = process.env; //require('./config.json');
 const fs = require('fs');
 const article = fs.readFileSync("README.md").toString();
 
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const connectionParams={
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true 
 }
-mongoose.connect(config.mongouri,connectionParams)
+mongoose.connect(mongouri,connectionParams)
 .then( () => {
     console.log('Connected to database ');
 })
@@ -127,4 +127,4 @@ discordClient.on('message', msg => {
 
 discordClient.on("error", () => { console.log("error"); });
 
-discordClient.login(config.token);
+discordClient.login(token);
